@@ -418,9 +418,9 @@
             box-sizing: border-box;
             padding: 18px 20px;
             margin-top: 20px;
-            background: linear-gradient(90deg, #1a0b2e, #d633ff, #1a0b2e);
+            background: linear-gradient(90deg, #001a4d, #00f3ff, #001a4d);
             background-size: 200% auto;
-            animation: premium-bg-flow 6s linear infinite;
+            animation: premium-bg-flow 3s linear infinite;
             color: #fff;
             font-family: 'Orbitron', sans-serif;
             font-size: 1em;
@@ -428,9 +428,9 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             text-decoration: none;
-            border: 2px solid rgba(214, 51, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(214, 51, 255, 0.4), inset 0 0 10px rgba(214, 51, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -440,9 +440,9 @@
 
         .button-premium:hover {
             color: #000;
-            background: linear-gradient(90deg, #d633ff, #fff, #d633ff);
+            background: linear-gradient(90deg, #00f3ff, #fff, #00f3ff);
             background-size: 200% auto;
-            box-shadow: 0 0 40px var(--secondary-color);
+            box-shadow: 0 0 40px var(--primary-color);
             transform: scale(1.05);
         }
         @keyframes premium-bg-flow {
@@ -870,7 +870,7 @@
                 <input type="text" id="current-sens" placeholder="ví dụ: 150-130-170-200-200-120">
                 <span class="validation-icon" id="sens-validation-icon"></span>
             </div>
-            <span class="input-helper">Nhập dãy số độ nhạy cũ của bạn</span>
+            <span class="input-helper">Nhập độ nhạy hiện tại của bạn</span>
         </div>
 
         <div class="input-group" style="border-bottom: none;">
@@ -954,7 +954,7 @@
         <p style="font-size: 0.9em; color: var(--text-light); margin-bottom: 20px;">Bạn muốn thay đổi độ nhạy ở mức nào?</p>
         <div class="modal-btn-group">
             <button onclick="setIntensity(1)">Thay đổi một chút (Standard)</button>
-            <button onclick="setIntensity(2)">Thay đổi Siêu cấp (Pro)</button>
+            <button onclick="setIntensity(2)">Thay đổi Siêu mạnh (Pro)</button>
         </div>
     </div>
 </div>
@@ -1161,7 +1161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ];
         let messageIndex = 0;
 
-        for (let i = 0; i <= 100; i+=2) {
+        for (let i = 0; i <= 100; i++) {
             loadingPercent.textContent = `${i}%`;
             loadingBarFill.style.width = `${i}%`;
 
@@ -1171,7 +1171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 hackerLog.appendChild(p);
                 messageIndex++;
             }
-            await new Promise(r => setTimeout(r, 1));
+            await new Promise(r => setTimeout(r, 60));
         }
 
         overlay.style.display = 'none';
@@ -1529,6 +1529,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let particlesArray;
 
+    let mouse = {
+        x: null,
+        y: null,
+        radius: 150
+    };
+
+    window.addEventListener('mousemove', (event) => {
+        mouse.x = event.x;
+        mouse.y = event.y;
+    });
+
+    window.addEventListener('mouseout', () => {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
     class Particle {
         constructor(x, y, directionX, directionY, size, color) {
             this.x = x;
@@ -1547,6 +1563,17 @@ document.addEventListener("DOMContentLoaded", () => {
         update() {
             if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
             if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+
+            if (mouse.x != null) {
+                let dx = this.x - mouse.x;
+                let dy = this.y - mouse.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    this.x += dx / distance * 3;
+                    this.y += dy / distance * 3;
+                }
+            }
+
             this.x += this.directionX;
             this.y += this.directionY;
             this.draw();
@@ -1583,7 +1610,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
                                ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
                 if (distance < (canvas.width/7) * (canvas.height/7)) {
-                    opacityValue = 1 - (distance/10000);
                     ctx.strokeStyle = 'rgba(214, 51, 255,' + opacityValue + ')';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
@@ -1611,7 +1637,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initParticles();
     animateParticles();
 
-    const zaloPremiumBtn = document.getElementById('zalo-premium-btn');
     const transitionOverlay = document.getElementById('page-transition-overlay');
 
     zaloPremiumBtn.addEventListener('click', (e) => {
@@ -1629,43 +1654,5 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 500);
         }, 600);
     });
-
-    function typewriterTitle(text, speed = 150, finalDelay = 2000) {
-        let i = 0;
-        const originalTitle = document.title;
-        document.title = '';
-
-        function type() {
-            if (i < text.length) {
-                document.title += text.charAt(i);
-                i++;
-                setTimeout(type, speed);
-            } else {
-                setTimeout(() => {
-                    let cursorVisible = true;
-                    setInterval(() => {
-                        document.title = text + (cursorVisible ? '█' : '');
-                        cursorVisible = !cursorVisible;
-                    }, 500);
-                }, finalDelay);
-            }
-        }
-        type();
-    }
-    typewriterTitle("Oreki System Online");
 });
 </script>
-</body>
-</html>                 document.title = text + (cursorVisible ? '█' : '');
-                        cursorVisible = !cursorVisible;
-                    }, 500);
-                }, finalDelay);
-            }
-        }
-        type();
-    }
-    typewriterTitle("Oreki System Online");
-});
-</script>
-</body>
-</html>
